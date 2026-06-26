@@ -1,0 +1,17 @@
+{
+  "rewrites": [
+    { "source": "/chamber",                                 "destination": "/chamber.html" },
+    { "source": "/admin",                                   "destination": "/admin.html" },
+    { "source": "/user/:hash",                              "destination": "/user.html" },
+    { "source": "/sys/core/admin/x7k2/secret/realm/vault", "destination": "/sys/core/admin/x7k2/secret/realm/vault/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/js/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
+  ]
+}

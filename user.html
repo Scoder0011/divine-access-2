@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile — Divine Access II</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a84c; --gold2: #f0d080;
+      --dark: #080608; --surface: #100e12;
+      --border: #2a2030; --text: #d4c9a8; --muted: #6b5f4a;
+      --red: #c94c4c; --green: #4caf7d;
+    }
+    body {
+      background: var(--dark); color: var(--text);
+      font-family: 'Raleway', sans-serif;
+      min-height: 100vh; display: flex;
+      flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3rem 2.5rem;
+      width: min(520px, 94vw);
+      text-align: center;
+    }
+    .card::before, .card::after {
+      content: ''; position: absolute;
+      width: 28px; height: 28px;
+      border-color: var(--gold); border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .sigil { font-size: 2.2rem; margin-bottom: 1rem; }
+    h1 {
+      font-family: 'Cinzel', serif; font-size: 1.3rem;
+      font-weight: 700; color: var(--gold);
+      letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.25em; text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+    .divider {
+      width: 60px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 2rem;
+    }
+    .info-block {
+      background: #0d0b10;
+      border: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      margin-bottom: 0.8rem;
+      text-align: left;
+    }
+    .info-block .label {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+    .info-block .value {
+      font-size: 0.9rem; color: var(--text);
+      font-family: monospace;
+    }
+    .role-admin { color: var(--gold2) !important; font-weight: bold; }
+    .role-user  { color: var(--muted) !important; }
+    .admin-badge {
+      display: inline-block;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      padding: 0.3rem 0.8rem;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+    }
+    .error-state { color: var(--red); margin: 2rem 0; }
+    .nav-links { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; }
+    .nav-link {
+      padding: 0.6rem 1.5rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .nav-link:hover { border-color: var(--gold); color: var(--gold); }
+    .nav-link.primary {
+      border-color: var(--gold); color: var(--gold);
+    }
+    .nav-link.primary:hover { background: var(--gold); color: var(--dark); }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <div class="sigil" id="sigil">⚜</div>
+    <h1 id="title">Loading...</h1>
+    <p class="subtitle" id="subtitle">Divine Registry</p>
+    <div class="divider"></div>
+    <div id="content"></div>
+  </div>
+
+  <script src="/js/md5.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    const currentUser = requireAuth('/');
+    if (!currentUser) {
+      // redirected by requireAuth
+    } else {
+      // get hash from URL
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const urlHash = pathParts[pathParts.length - 1];
+
+      const target = USERS[urlHash];
+      const content = document.getElementById('content');
+
+      if (!target) {
+        document.getElementById('title').textContent = 'Not Found';
+        document.getElementById('subtitle').textContent = 'No such soul in the registry';
+        document.getElementById('sigil').textContent = '✕';
+        content.innerHTML = `
+          <p class="error-state">This identity does not exist in the divine records.</p>
+          <div class="nav-links">
+            <a class="nav-link" href="/chamber">Return to Chamber</a>
+          </div>`;
+      } else {
+        const isOwn  = currentUser.id === target.id;
+        const isAdminProfile = target.role === 'admin';
+
+        document.getElementById('title').textContent = target.username.toUpperCase();
+        document.getElementById('subtitle').textContent = isOwn ? 'Your Divine Record' : 'Divine Registry Entry';
+        document.getElementById('sigil').textContent = isAdminProfile ? '♛' : '⚜';
+
+        let html = '';
+
+        if (isAdminProfile) {
+          html += `<div class="admin-badge">⚜ Highest Authority ⚜</div><br/>`;
+        }
+
+        html += `
+          <div class="info-block">
+            <div class="label">Designation</div>
+            <div class="value">${target.username}</div>
+          </div>
+          <div class="info-block">
+            <div class="label">Rank</div>
+            <div class="value ${isAdminProfile ? 'role-admin' : 'role-user'}">${target.role.toUpperCase()}</div>
+          </div>
+          <div class="info-block">
+            <div class="label">Registry Hash</div>
+            <div class="value" style="font-size:0.8rem; opacity:0.7;">${target.hash}</div>
+          </div>`;
+
+        if (isAdminProfile) {
+          html += `
+          <div class="info-block" style="border-color: rgba(201,168,76,0.3);">
+            <div class="label" style="color: var(--gold);">Note</div>
+            <div class="value" style="color: var(--muted); font-size:0.82rem; font-family: 'Raleway', sans-serif;">
+              This soul holds the highest authority. Only those bearing the mark of admin may access the inner sanctum beyond.
+            </div>
+          </div>`;
+        }
+
+        html += `<div class="nav-links">
+          <a class="nav-link" href="/chamber">Chamber</a>
+          ${currentUser.role === 'admin' ? '<a class="nav-link primary" href="/admin">Admin Panel</a>' : ''}
+        </div>`;
+
+        content.innerHTML = html;
+      }
+    }
+  </script>
+</body>
+</html>

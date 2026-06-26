@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Divine Access II</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a84c; --gold2: #f0d080;
+      --dark: #080608; --surface: #100e12;
+      --border: #2a2030; --text: #d4c9a8; --muted: #6b5f4a;
+      --red: #c94c4c;
+    }
+    body {
+      background: var(--dark); color: var(--text);
+      font-family: 'Raleway', sans-serif;
+      min-height: 100vh; display: flex;
+      flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      animation: pulse 5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50%       { opacity: 1;   transform: translate(-50%, -50%) scale(1.1); }
+    }
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid rgba(201,168,76,0.35);
+      padding: 3rem 2.5rem;
+      width: min(560px, 94vw);
+      text-align: center;
+    }
+    .card::before, .card::after {
+      content: ''; position: absolute;
+      width: 32px; height: 32px;
+      border-color: var(--gold); border-style: solid;
+    }
+    .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card::after  { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+    .sigil {
+      font-size: 3rem; margin-bottom: 1rem;
+      filter: drop-shadow(0 0 12px var(--gold));
+      animation: glow 3s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%, 100% { filter: drop-shadow(0 0 6px var(--gold)); }
+      50%       { filter: drop-shadow(0 0 22px var(--gold2)); }
+    }
+    h1 {
+      font-family: 'Cinzel', serif; font-size: 1.5rem;
+      font-weight: 900; color: var(--gold);
+      letter-spacing: 0.2em; text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      font-size: 0.7rem; color: var(--muted);
+      letter-spacing: 0.25em; text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+    .divider {
+      width: 80px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 2rem;
+    }
+    .welcome {
+      font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 2rem; letter-spacing: 0.05em;
+    }
+    .welcome span { color: var(--gold2); font-weight: bold; }
+    .secret-block {
+      background: #0a090d;
+      border: 1px solid rgba(201,168,76,0.25);
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+      text-align: left;
+      position: relative;
+    }
+    .secret-block::before {
+      content: '⚠ RESTRICTED';
+      position: absolute;
+      top: -0.6rem; left: 1rem;
+      background: var(--surface);
+      padding: 0 0.5rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+    }
+    .secret-block .label {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .secret-block .value {
+      font-family: monospace; font-size: 0.85rem;
+      color: var(--gold2); word-break: break-all;
+      line-height: 1.6;
+    }
+    .vault-path {
+      background: #0a090d;
+      border: 1px solid rgba(201,168,76,0.5);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+    .vault-path .label {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 0.8rem;
+    }
+    .vault-path .path {
+      font-family: monospace; font-size: 0.9rem;
+      color: var(--gold2);
+      letter-spacing: 0.05em;
+    }
+    .vault-path .path a {
+      color: var(--gold2);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(201,168,76,0.3);
+      transition: border-color 0.3s;
+    }
+    .vault-path .path a:hover { border-color: var(--gold2); }
+    .nav-links { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; }
+    .nav-link {
+      padding: 0.6rem 1.5rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+    .nav-link:hover { border-color: var(--gold); color: var(--gold); }
+    .denied {
+      color: var(--red); font-size: 0.9rem;
+      margin: 2rem 0; letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="sigil">♛</div>
+    <h1>Admin Sanctum</h1>
+    <p class="subtitle">Restricted — Highest Authority</p>
+    <div class="divider"></div>
+    <div id="content"></div>
+  </div>
+
+  <script src="/js/md5.js"></script>
+  <script src="/js/users.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    const user = requireAuth('/');
+    if (user) {
+      const content = document.getElementById('content');
+
+      if (user.role !== 'admin') {
+        content.innerHTML = `
+          <p class="denied">⛔ Access Denied. You do not bear the mark of the Lord.</p>
+          <div class="nav-links">
+            <a class="nav-link" href="/chamber">Return to Chamber</a>
+          </div>`;
+      } else {
+        content.innerHTML = `
+          <p class="welcome">The sanctum recognises you, <span>${user.username}</span>. The inner gates yield.</p>
+
+          <div class="secret-block">
+            <div class="label">Authority Level</div>
+            <div class="value">DIVINE_ADMINISTRATOR — Unrestricted Access</div>
+          </div>
+
+          <div class="secret-block">
+            <div class="label">Registry Count</div>
+            <div class="value">101 souls bound to the divine record</div>
+          </div>
+
+          <div class="vault-path">
+            <div class="label">⚜ The Sacred Vault — Follow the Path ⚜</div>
+            <div class="path">
+              <a href="/sys/core/admin/x7k2/secret/realm/vault">/sys/core/admin/x7k2/secret/realm/vault</a>
+            </div>
+          </div>
+
+          <div class="nav-links">
+            <a class="nav-link" href="/chamber">Chamber</a>
+            <a class="nav-link" href="/" onclick="logout(); return false;">Depart</a>
+          </div>`;
+      }
+    }
+  </script>
+</body>
+</html>
