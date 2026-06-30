@@ -171,16 +171,13 @@
     <p class="footer-text">Only the worthy may pierce the inner sanctum</p>
   </div>
 
-  <script src="/js/md5.js"></script>
-  <script src="/js/random.js"></script>
-  <script src="/js/auth.js"></script>
   <script>
-    // redirect if already logged in
-    if (getToken() && parseToken(getToken())) {
-      window.location.href = '/chamber';
-    }
+    // redirect if already logged in (server is the source of truth now)
+    fetch('/api/me').then(r => {
+      if (r.ok) window.location.href = '/chamber';
+    }).catch(() => {});
 
-    function login() {
+    async function login() {
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value.trim();
       const msg = document.getElementById('msg');
@@ -194,19 +191,23 @@
       msg.className = 'msg';
       msg.textContent = 'Consulting the divine records...';
 
-      // find user by username + password
-      const match = Object.values(USERS).find(
-        u => u.username === username && u.password === password
-      );
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
-      if (match) {
-        const token = createToken(match);
-        localStorage.setItem('divine_token', token);
-        msg.textContent = 'Identity acknowledged. Proceeding...';
-        setTimeout(() => window.location.href = '/chamber', 800);
-      } else {
+        if (res.ok) {
+          msg.textContent = 'Identity acknowledged. Proceeding...';
+          setTimeout(() => window.location.href = '/chamber', 700);
+        } else {
+          msg.className = 'msg error';
+          msg.textContent = 'The gate does not recognise you.';
+        }
+      } catch (e) {
         msg.className = 'msg error';
-        msg.textContent = 'The gate does not recognise you.';
+        msg.textContent = 'The records are unreachable. Try again.';
       }
     }
 
