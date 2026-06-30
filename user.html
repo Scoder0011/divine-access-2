@@ -119,22 +119,30 @@
     <div id="content"></div>
   </div>
 
-  <script src="/js/md5.js"></script>
-  <script src="/js/random.js"></script>
-  <script src="/js/auth.js"></script>
   <script>
-    const currentUser = requireAuth('/');
-    if (!currentUser) {
-      // redirected by requireAuth
-    } else {
+    async function init() {
+      // confirm logged in
+      let meRes;
+      try {
+        meRes = await fetch('/api/me');
+      } catch (e) {
+        window.location.href = '/';
+        return;
+      }
+      if (!meRes.ok) {
+        window.location.href = '/';
+        return;
+      }
+      const currentUser = await meRes.json();
+
       // get hash from URL
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       const urlHash = pathParts[pathParts.length - 1];
 
-      const target = USERS[urlHash];
       const content = document.getElementById('content');
+      const profRes = await fetch('/api/profile?hash=' + encodeURIComponent(urlHash));
 
-      if (!target) {
+      if (!profRes.ok) {
         document.getElementById('title').textContent = 'Not Found';
         document.getElementById('subtitle').textContent = 'No such soul in the registry';
         document.getElementById('sigil').textContent = '✕';
@@ -143,52 +151,56 @@
           <div class="nav-links">
             <a class="nav-link" href="/chamber">Return to Chamber</a>
           </div>`;
-      } else {
-        const isOwn  = currentUser.id === target.id;
-        const isAdminProfile = target.role === 'admin';
+        return;
+      }
 
-        document.getElementById('title').textContent = target.username.toUpperCase();
-        document.getElementById('subtitle').textContent = isOwn ? 'Your Divine Record' : 'Divine Registry Entry';
-        document.getElementById('sigil').textContent = isAdminProfile ? '♛' : '⚜';
+      const target = await profRes.json();
+      const isOwn = currentUser.hash === target.hash;
+      const isAdminProfile = target.role === 'admin';
 
-        let html = '';
+      document.getElementById('title').textContent = target.username.toUpperCase();
+      document.getElementById('subtitle').textContent = isOwn ? 'Your Divine Record' : 'Divine Registry Entry';
+      document.getElementById('sigil').textContent = isAdminProfile ? '♛' : '⚜';
 
-        if (isAdminProfile) {
-          html += `<div class="admin-badge">⚜ Highest Authority ⚜</div><br/>`;
-        }
+      let html = '';
 
-        html += `
-          <div class="info-block">
-            <div class="label">Designation</div>
-            <div class="value">${target.username}</div>
-          </div>
-          <div class="info-block">
-            <div class="label">Rank</div>
-            <div class="value ${isAdminProfile ? 'role-admin' : 'role-user'}">${target.role.toUpperCase()}</div>
-          </div>
-          <div class="info-block">
-            <div class="label">Registry Hash</div>
-            <div class="value" style="font-size:0.8rem; opacity:0.7;">${target.hash}</div>
-          </div>`;
+      if (isAdminProfile) {
+        html += `<div class="admin-badge">⚜ Highest Authority ⚜</div><br/>`;
+      }
 
-        if (isAdminProfile) {
-          html += `
-          <div class="info-block" style="border-color: rgba(201,168,76,0.3);">
-            <div class="label" style="color: var(--gold);">Note</div>
-            <div class="value" style="color: var(--muted); font-size:0.82rem; font-family: 'Raleway', sans-serif;">
-              This soul holds the highest authority. Only those bearing the mark of admin may access the inner sanctum beyond.
-            </div>
-          </div>`;
-        }
-
-        html += `<div class="nav-links">
-          <a class="nav-link" href="/chamber">Chamber</a>
-          ${currentUser.role === 'admin' ? '<a class="nav-link primary" href="/admin">Admin Panel</a>' : ''}
+      html += `
+        <div class="info-block">
+          <div class="label">Designation</div>
+          <div class="value">${target.username}</div>
+        </div>
+        <div class="info-block">
+          <div class="label">Rank</div>
+          <div class="value ${isAdminProfile ? 'role-admin' : 'role-user'}">${target.role.toUpperCase()}</div>
+        </div>
+        <div class="info-block">
+          <div class="label">Registry Hash</div>
+          <div class="value" style="font-size:0.8rem; opacity:0.7;">${target.hash}</div>
         </div>`;
 
-        content.innerHTML = html;
+      if (isAdminProfile) {
+        html += `
+        <div class="info-block" style="border-color: rgba(201,168,76,0.3);">
+          <div class="label" style="color: var(--gold);">Note</div>
+          <div class="value" style="color: var(--muted); font-size:0.82rem; font-family: 'Raleway', sans-serif;">
+            This soul holds the highest authority. Only those bearing the mark of admin may access the inner sanctum beyond.
+          </div>
+        </div>`;
       }
+
+      html += `<div class="nav-links">
+        <a class="nav-link" href="/chamber">Chamber</a>
+        ${currentUser.role === 'admin' ? '<a class="nav-link primary" href="/admin">Admin Panel</a>' : ''}
+      </div>`;
+
+      content.innerHTML = html;
     }
+
+    init();
   </script>
 </body>
 </html>
