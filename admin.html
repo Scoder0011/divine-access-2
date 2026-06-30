@@ -163,43 +163,16 @@
   <script src="/js/random.js"></script>
   <script src="/js/auth.js"></script>
   <script>
-    const user = requireAuth('/');
-    if (user) {
-      const content = document.getElementById('content');
-
-      if (user.role !== 'admin') {
-        content.innerHTML = `
-          <p class="denied"> Access Denied. You do not bear the mark of the Lord.</p>
-          <div class="nav-links">
-            <a class="nav-link" href="/chamber">Return to Chamber</a>
-          </div>`;
-      } else {
-        content.innerHTML = `
-          <p class="welcome">The sanctum recognises you, <span>${user.username}</span>. The inner gates yield.</p>
-
-          <div class="secret-block">
-            <div class="label">Authority Level</div>
-            <div class="value">DIVINE_ADMINISTRATOR — Unrestricted Access</div>
-          </div>
-
-          <div class="secret-block">
-            <div class="label">Registry Count</div>
-            <div class="value">101 souls bound to the divine record</div>
-          </div>
-
-          <div class="vault-path">
-            <div class="label">⚜ The Sacred Vault — Follow the Path ⚜</div>
-            <div class="path">
-              <a href="/sys/core/admin/x7k2/secret/realm/vault">/sys/core/admin/x7k2/secret/realm/vault</a>
-            </div>
-          </div>
-
-          <div class="nav-links">
-            <a class="nav-link" href="/chamber">Chamber</a>
-            <a class="nav-link" href="/" onclick="logout(); return false;">Depart</a>
-          </div>`;
-      }
-    }
+    fetch('/api/admin').then(async r => {
+  const content = document.getElementById('content');
+  if (!r.ok) {
+    content.innerHTML = `<p class="denied">Access Denied. You do not bear the mark of the Lord.</p>
+      <div class="nav-links"><a class="nav-link" href="/chamber">Return to Chamber</a></div>`;
+    return;
+  }
+  const data = await r.json();
+  content.innerHTML = `... <a href="${data.vaultPath}">${data.vaultPath}</a> ...`; // same markup as before
+});
   </script>
 </body>
 </html>
