@@ -128,20 +128,15 @@
   <script src="/js/random.js"></script>
   <script src="/js/auth.js"></script>
   <script>
-    const user = requireAuth('/');
-    if (user) {
-      document.getElementById('disp-username').textContent = user.username;
-      const rankEl = document.getElementById('disp-role');
-      if (user.role === 'admin') {
-        rankEl.textContent = 'KING';
-        rankEl.className = 'value rank-king';
-      } else {
-        rankEl.textContent = 'PAWN';
-        rankEl.className = 'value rank-pawn';
-      }
-      const hash = md5(String(user.id));
-      document.getElementById('profile-link').href = '/user/' + hash;
-    }
+    fetch('/api/me').then(async r => {
+  if (!r.ok) return location.href = '/';
+  const user = await r.json();
+  document.getElementById('disp-username').textContent = user.username;
+  const rankEl = document.getElementById('disp-role');
+  rankEl.textContent = user.role === 'admin' ? 'KING' : 'PAWN';
+  rankEl.className = 'value ' + (user.role === 'admin' ? 'rank-king' : 'rank-pawn');
+  document.getElementById('profile-link').href = '/user/' + user.hash;
+});
   </script>
 </body>
 </html>
