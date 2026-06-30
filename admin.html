@@ -156,23 +156,73 @@
     <h1>Admin Sanctum</h1>
     <p class="subtitle">Restricted — Highest Authority</p>
     <div class="divider"></div>
-    <div id="content"></div>
+    <div id="content">Consulting the sanctum...</div>
   </div>
 
-  <script src="/js/md5.js"></script>
-  <script src="/js/random.js"></script>
-  <script src="/js/auth.js"></script>
   <script>
-    fetch('/api/admin').then(async r => {
-  const content = document.getElementById('content');
-  if (!r.ok) {
-    content.innerHTML = `<p class="denied">Access Denied. You do not bear the mark of the Lord.</p>
-      <div class="nav-links"><a class="nav-link" href="/chamber">Return to Chamber</a></div>`;
-    return;
-  }
-  const data = await r.json();
-  content.innerHTML = `... <a href="${data.vaultPath}">${data.vaultPath}</a> ...`; // same markup as before
-});
+    async function init() {
+      const content = document.getElementById('content');
+
+      // first confirm the visitor is logged in at all
+      let meRes;
+      try {
+        meRes = await fetch('/api/me');
+      } catch (e) {
+        window.location.href = '/';
+        return;
+      }
+      if (!meRes.ok) {
+        window.location.href = '/';
+        return;
+      }
+      const me = await meRes.json();
+
+      // now ask the server whether this session is allowed into the sanctum
+      const adminRes = await fetch('/api/admin');
+
+      if (!adminRes.ok) {
+        content.innerHTML = `
+          <p class="denied"> Access Denied. You do not bear the mark of the Lord.</p>
+          <div class="nav-links">
+            <a class="nav-link" href="/chamber">Return to Chamber</a>
+          </div>`;
+        return;
+      }
+
+      const data = await adminRes.json();
+
+      content.innerHTML = `
+        <p class="welcome">The sanctum recognises you, <span>${me.username}</span>. The inner gates yield.</p>
+
+        <div class="secret-block">
+          <div class="label">Authority Level</div>
+          <div class="value">DIVINE_ADMINISTRATOR — Unrestricted Access</div>
+        </div>
+
+        <div class="secret-block">
+          <div class="label">Registry Count</div>
+          <div class="value">101 souls bound to the divine record</div>
+        </div>
+
+        <div class="vault-path">
+          <div class="label">⚜ The Sacred Vault — Follow the Path ⚜</div>
+          <div class="path">
+            <a href="${data.vaultPath}">${data.vaultPath}</a>
+          </div>
+        </div>
+
+        <div class="nav-links">
+          <a class="nav-link" href="/chamber">Chamber</a>
+          <a class="nav-link" href="/" onclick="logout(); return false;">Depart</a>
+        </div>`;
+    }
+
+    function logout() {
+      document.cookie = 'divine_token=; Path=/; Max-Age=0; SameSite=Lax';
+      window.location.href = '/';
+    }
+
+    init();
   </script>
 </body>
 </html>
